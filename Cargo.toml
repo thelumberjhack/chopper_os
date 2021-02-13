@@ -1,0 +1,11 @@
+[package]
+name = "chopper_os"
+version = "0.1.0"
+authors = ["Yannick Formaggio <5294889+thelumberjhack@users.noreply.github.com>"]
+edition = "2018"
+
+[package.metadata.bootimage]
+run-args = ["-L", "C:\\qemu"]
+
+[dependencies]
+bootloader = "0.9"
