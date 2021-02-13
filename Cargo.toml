@@ -9,3 +9,4 @@ run-args = ["-L", "C:\\qemu"]
 
 [dependencies]
 bootloader = "0.9"
+volatile = "0.2.6"
