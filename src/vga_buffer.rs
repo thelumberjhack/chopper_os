@@ -1,5 +1,7 @@
 use core::fmt;
 use volatile::Volatile;
+use lazy_static::lazy_static;
+use spin::Mutex;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -124,26 +126,29 @@ impl fmt::Write for Writer {
     }
 }
 
-/// To avoid carrying a `Writer` instance around in other modules, let's provide
-/// a global writer that can be used as an interface
-pub static WRITER: Writer = Writer {
-    column_position: 0,
-    color_code: ColorCode::new(Color::Yellow, Color::Black),
-    buffer: unsafe { &mut *(0xb8000 as *mut Buffer)},
-};
-
-/// testing it out
-pub fn print_something() {
-    use core::fmt::Write;
-    let mut writer = Writer {
+// To avoid carrying a `Writer` instance around in other modules, let's provide
+// a global writer that can be used as an interface
+lazy_static! {  // see https://os.phil-opp.com/vga-text-mode/#lazy-statics
+    pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
         column_position: 0,
         color_code: ColorCode::new(Color::Yellow, Color::Black),
-        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
-    };
+        buffer: unsafe { &mut *(0xb8000 as *mut Buffer)},
+    });
+}
 
-    writer.write_byte(b'H');
-    writer.write_string("ello ");
-    writeln!(writer, "Wörld!");
-    write!(writer, "The numbers are {} and {}", 42, 1.0/3.0).unwrap();
+#[macro_export]
+macro_rules! print {
+    ($($arg:tt)*) => ($crate::vga_buffer::_print(format_args!($($arg)*)));
+}
 
+#[macro_export]
+macro_rules! println {
+    () => ($crate::print!("\n"));
+    ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
+}
+
+#[doc(hidden)]
+pub fn _print(args: fmt::Arguments) {
+    use core::fmt::Write;
+    WRITER.lock().write_fmt(args).unwrap();
 }
