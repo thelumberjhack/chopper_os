@@ -6,11 +6,21 @@ edition = "2018"
 
 [package.metadata.bootimage]
 run-args = ["-L", "C:\\qemu"]
+test-args = [
+    "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04",
+    "-serial", "stdio",
+    "-display", "none",
+    "-L", "C:\\qemu"
+]
+test-success-exit-code = 33     # (0x10 << 1) | 1
+test-timeout = 30
 
 [dependencies]
-bootloader = "0.9"
-volatile = "0.2.6"
-spin = "0.5"
+bootloader = "0.9"      # generate a bootloader for our kernel
+volatile = "0.2.6"      # avoid some compiler optimizations
+spin = "0.5"            # mutex
+x86_64 = "0.13.2"       # for qemu exit device access
+uart_16550 = "0.2"      # to print to host console from qemu
 
 [dependencies.lazy_static]
 version = "1.0"
