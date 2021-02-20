@@ -25,3 +25,8 @@ uart_16550 = "0.2"      # to print to host console from qemu
 [dependencies.lazy_static]
 version = "1.0"
 features = ["spin_no_std"]
+
+# Disabling harness for the 'should_panic' test
+[[test]]
+name = "should_panic"
+harness = false
